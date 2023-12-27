@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sortable ToDo List</title>
+    <style>
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 5px 0;
+            cursor: grab;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+</head>
+<body>
+    <h1>Sortable ToDo List</h1>
+    <input type="text" id="taskInput" placeholder="Add a new task">
+    <button onclick="addTask()">Add Task</button>
+    <ul id="taskList"></ul>
+
+    <script>
+
+        function addTask() {
+            var taskInput = document.getElementById('taskInput');
+            var taskList = document.getElementById('taskList');
+
+            if (taskInput.value.trim() === '') {
+                alert('Ведіть таску.');
+                return;
+            }
+
+            var li = document.createElement('li');
+            li.textContent = taskInput.value;
+            
+            taskList.appendChild(li);
+            taskInput.value = '';
+
+            saveTasks();
+
+            updateSortOrder();
+        }
+
+        function saveTasks() {
+            var taskList = document.getElementById('taskList');
+            var tasks = [];
+
+            for (var i = 0; i < taskList.children.length; i++) {
+                tasks.push(taskList.children[i].textContent);
+            }
+
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            var taskList = document.getElementById('taskList');
+            var tasks = localStorage.getItem('tasks');
+
+            if (tasks) {
+                tasks = JSON.parse(tasks);
+
+                tasks.forEach(function (task) {
+                    var li = document.createElement('li');
+                    li.textContent = task;
+                    li.onclick = function () {
+                        taskList.removeChild(li);
+                        saveTasks();
+                    };
+                    taskList.appendChild(li);
+                });
+
+                updateSortOrder();
+            }
+        }
+
+        function updateSortOrder() {
+            var taskList = document.getElementById('taskList');
+
+            new Sortable(taskList, {
+                onUpdate: function () {
+                    saveTasks();
+                },
+            });
+        }
+
+        window.onload = function () {
+            loadTasks();
+        };
+    </script>
+</body>
+</html>
